@@ -1,0 +1,68 @@
+
+#!/bin/bash
+
+# Color codes
+RED='\e[31m'
+GREEN='\e[32m'
+RESET='\e[0m'
+
+# Initialize variables
+step=0
+hits=0
+misses=0
+last_numbers=()
+
+while true; do
+  step=$((step + 1))
+  random_number=$((RANDOM % 10)) # Generate random number (0-9)
+  last_numbers+=("$random_number") # Add to last numbers array
+
+  # Keep only the last 10 numbers
+  if [ ${#last_numbers[@]} -gt 10 ]; then
+    last_numbers=("${last_numbers[@]:1}")
+  fi
+
+  while true; do
+    read -p "Step: $step
+Please enter number from 0 to 9 (q - quit): " input
+
+    # Validate input
+    if [[ "$input" == "q" ]]; then
+      echo "Exiting the game. Goodbye!"
+      exit 0
+    elif [[ "$input" =~ ^[0-9]$ ]]; then
+      user_number=$input
+      break
+    else
+      echo "Input error!"
+    fi
+  done
+
+  # Check if the guess is correct
+  if [[ "$user_number" -eq "$random_number" ]]; then
+    echo -e "${GREEN}Hit! My number: $random_number${RESET}"
+    hits=$((hits + 1))
+  else
+    echo -e "${RED}Miss! My number: $random_number${RESET}"
+    misses=$((misses + 1))
+  fi
+
+  # Calculate percentages
+  total=$((hits + misses))
+  hit_percent=$((hits * 100 / total))
+  miss_percent=$((100 - hit_percent))
+
+  # Display statistics
+  echo "Hit: ${hit_percent}% Miss: ${miss_percent}%"
+  echo -n "Numbers: "
+
+  # Display last 10 numbers with colors
+  for num in "${last_numbers[@]}"; do
+    if [[ "$num" -eq "$user_number" ]]; then
+      echo -ne "${GREEN}$num${RESET} "
+    else
+      echo -ne "${RED}$num${RESET} "
+    fi
+  done
+  echo -e "\n"
+done
